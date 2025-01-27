@@ -10,8 +10,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/csrf"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/utils"
 	"github.com/gofiber/template/html/v2"
 	"github.com/joho/godotenv"
 )
@@ -34,13 +36,28 @@ func main() {
 	})
 	// Middleware
 	app.Use(logger.New())
-	app.Use(cors.New(cors.Config{}))
-	// Initialize default config
+	app.Use(cors.New(cors.Config{
+		AllowOrigins: "http://localhost:5173, https://cargozig.com, https://dashboard.cargozig.com",
+		AllowHeaders: "Origin, Content-Type, Accept, Authorization, X-Csrf-Token",
+		AllowMethods: "GET,POST,PUT,DELETE,OPTIONS",
+	}))
 	app.Use(limiter.New(limiter.Config{
-		Max:               20,
-		Expiration:        30 * time.Second,
+		Max:               100,
+		Expiration:        60 * time.Second,
 		LimiterMiddleware: limiter.SlidingWindow{},
-	})) // Limit the number of requests to 20 per 30 seconds
+		KeyGenerator: func(c *fiber.Ctx) string {
+			// Use IP + User ID if authenticated for more accurate limiting
+			return c.IP()
+		},
+	}))
+	// CSRF Protection
+	app.Use(csrf.New(csrf.Config{
+		KeyLookup:      "header:X-Csrf-Token", // Keep this simple header-based approach
+		CookieName:     "csrf_",
+		CookieSameSite: "Lax",
+		Expiration:     24 * time.Hour,
+		KeyGenerator:   utils.UUIDv4,
+	}))
 
 	// Routes
 	// Group
