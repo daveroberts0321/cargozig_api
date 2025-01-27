@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - CargoZig Staff Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#232f3e] text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="/dashboard" class="font-bold text-xl">CargoZig</a>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="/dashboard" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Dashboard</a>
+                        <a href="/shipments" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Shipments</a>
+                        <a href="/trailers" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Trailers</a>
+                        <a href="/carriers" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Carriers</a>
+                        <a href="/analytics" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Analytics</a>
+                    </div>
+                </div>
+
+                <!-- User Menu -->
+                <div class="flex items-center">
+                    <span class="text-sm mr-4">{{.UserName}}</span>
+                    <a href="/logout" class="text-sm hover:text-[#febd69]">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Menu -->
+    <div class="md:hidden bg-[#232f3e] border-t border-[#131921]">
+        <div class="px-2 py-3 space-y-1">
+            <a href="/dashboard" class="block px-3 py-2 rounded-md text-white text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Dashboard</a>
+            <a href="/shipments" class="block px-3 py-2 rounded-md text-white text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Shipments</a>
+            <a href="/trailers" class="block px-3 py-2 rounded-md text-white text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Trailers</a>
+            <a href="/carriers" class="block px-3 py-2 rounded-md text-white text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Carriers</a>
+            <a href="/analytics" class="block px-3 py-2 rounded-md text-white text-sm font-medium hover:bg-[#febd69] hover:text-[#232f3e]">Analytics</a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Breadcrumb -->
+        <div class="mb-6">
+            <nav class="text-sm">
+                <ol class="list-none p-0 inline-flex text-gray-500">
+                    <li class="flex items-center">
+                        <a href="/dashboard" class="hover:text-[#007185]">Dashboard</a>
+                        <svg class="w-3 h-3 mx-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                        </svg>
+                    </li>
+                    <li>{{.PageTitle}}</li>
+                </ol>
+            </nav>
+        </div>
+
+        <!-- Page Content -->
+        <div class="bg-white shadow rounded-lg p-6">
+            {{template "content" .}}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#232f3e] text-white mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="text-center text-sm">
+                &copy; {{.CurrentYear}} CargoZig. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
