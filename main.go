@@ -22,7 +22,7 @@ func main() {
 	fmt.Println("CargoZig Backend Golang")
 	// load .env file if it exists
 	if err := godotenv.Load(); err != nil {
-		fmt.Println("Warning: .env file not found, using environment variables")
+		fmt.Println("Warning: .env file not found")
 	}
 	// Initialize database connection
 	db := config.GetDB()
@@ -32,7 +32,7 @@ func main() {
 	// Pass the engine to the Fiber config
 	app := fiber.New(fiber.Config{
 		Views:       engine,
-		ViewsLayout: "layouts/main", // This will be your default layout
+		ViewsLayout: "layouts/main", //default layout
 	})
 	// Middleware
 	app.Use(logger.New())
@@ -62,8 +62,11 @@ func main() {
 	// Routes
 	// Group
 	admin := app.Group("/admin")
-
+	api := app.Group("/api")
+	// cargozig admin pages
 	admin.Get("/", handlers.LandingPage)
+	// cargozig api pages
+	api.Get("/ping", handlers.Ping)
 
 	// Start server
 	port := os.Getenv("PORT")
