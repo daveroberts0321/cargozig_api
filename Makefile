@@ -4,7 +4,7 @@
 PORT ?= 3000
 
 # Run the development server
-develop:
+run:
 	@echo "Starting development server on port $(PORT)..."
 	@go run main.go
 

@@ -4,6 +4,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+// SetupApiRoutes registers all API routes.
+func SetupApiRoutes(router fiber.Router) {
+	router.Get("/ping", Ping)
+	// Add more API routes here.
+}
+
 // @Summary Health check endpoint
 // @Description Simple ping-pong no-auth response to verify API is running
 // @Tags system

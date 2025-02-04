@@ -61,12 +61,12 @@ func main() {
 
 	// Routes
 	// Group
-	admin := app.Group("/admin")
-	api := app.Group("/api")
-	// cargozig admin pages
-	admin.Get("/", handlers.LandingPage)
-	// cargozig api pages
-	api.Get("/ping", handlers.Ping)
+	adminGroup := app.Group("/deathstar")
+	apiGroup := app.Group("/api")
+
+	// Register routes from handlers.
+	handlers.SetupAdminRoutes(adminGroup)
+	handlers.SetupApiRoutes(apiGroup)
 
 	// Start server
 	port := os.Getenv("PORT")
