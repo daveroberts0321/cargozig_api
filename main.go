@@ -66,7 +66,7 @@ func main() {
 
 	// Register routes from handlers.
 	handlers.SetupAdminRoutes(adminGroup)
-	handlers.SetupApiRoutes(apiGroup)
+	handlers.SetupApiAuthRoutes(apiGroup)
 
 	// Start server
 	port := os.Getenv("PORT")

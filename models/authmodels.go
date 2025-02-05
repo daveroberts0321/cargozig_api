@@ -56,7 +56,7 @@ type User struct {
 	BaseModel
 	Username    string       `json:"username"`
 	Email       string       `json:"email"`
-	Password    string       `json:"password"`
+	Password    string       `json:"password"` //hashed only
 	CompanyID   uuid.UUID    `json:"company_id"`
 	Company     *Company     `json:"company" gorm:"foreignKey:CompanyID"`
 	Permissions []Permission `gorm:"type:text[]"` // Using PostgreSQL text array
