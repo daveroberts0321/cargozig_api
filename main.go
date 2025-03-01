@@ -24,16 +24,27 @@ func main() {
 	if err := godotenv.Load(); err != nil {
 		fmt.Println("Warning: .env file not found")
 	}
-	// Initialize database connection
-	db := config.GetDB()
-	// Initialize handlers with database
-	handlers.InitDB(db)
+
 	engine := html.New("./views", ".html")
 	// Pass the engine to the Fiber config
 	app := fiber.New(fiber.Config{
 		Views:       engine,
 		ViewsLayout: "layouts/main", //default layout
 	})
+
+	// Initialize database connection during startup
+	db := config.GetDB()
+
+	// Test the connection to ensure it's working
+	sqlDB, err := db.DB()
+	if err != nil {
+		log.Fatalf("Failed to get database instance: %v", err)
+	}
+	// Ping the database to verify the connection is alive
+	if err := sqlDB.Ping(); err != nil {
+		log.Fatalf("Failed to ping database: %v", err)
+	}
+
 	// Middleware
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
@@ -65,8 +76,8 @@ func main() {
 	apiGroup := app.Group("/api")
 
 	// Register routes from handlers.
-	handlers.SetupAdminRoutes(adminGroup)
-	handlers.SetupApiAuthRoutes(apiGroup)
+	handlers.SetupAdminRoutes(adminGroup) // deathstar
+	handlers.SetupApiAuthRoutes(apiGroup) // api
 
 	// Start server
 	port := os.Getenv("PORT")
