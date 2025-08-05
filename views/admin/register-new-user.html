@@ -1,0 +1,172 @@
+{{define "content"}}
+<div class="card">
+    <h2>Register New User</h2>
+    <p>Create a new user account with company information</p>
+
+    <div id="alert" class="alert"></div>
+
+    <form id="registerForm">
+        <!-- User Information Section -->
+        <div class="form-section">
+            <h3 class="section-title">User Information</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="username">Username *</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="role">Role *</label>
+                    <select id="role" name="role" required>
+                        <option value="">Select Role</option>
+                        <option value="shipper">Shipper</option>
+                        <option value="carrier">Carrier</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Information Section -->
+        <div class="form-section">
+            <h3 class="section-title">Company Information</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="company_name">Company Name *</label>
+                    <input type="text" id="company_name" name="company_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="company_email">Company Email *</label>
+                    <input type="email" id="company_email" name="company_email" required>
+                </div>
+                <div class="form-group">
+                    <label for="company_phone">Company Phone</label>
+                    <input type="tel" id="company_phone" name="company_phone">
+                </div>
+                <div class="form-group">
+                    <label for="company_type">Company Type *</label>
+                    <select id="company_type" name="company_type" required>
+                        <option value="">Select Type</option>
+                        <option value="shipper">Shipper</option>
+                        <option value="carrier">Carrier</option>
+                        <option value="both">Both</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label for="company_address">Company Address</label>
+                    <textarea id="company_address" name="company_address" placeholder="Enter full address"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="company_city">City</label>
+                    <input type="text" id="company_city" name="company_city">
+                </div>
+                <div class="form-group">
+                    <label for="company_state">State</label>
+                    <input type="text" id="company_state" name="company_state">
+                </div>
+                <div class="form-group">
+                    <label for="company_zip_code">Zip Code</label>
+                    <input type="text" id="company_zip_code" name="company_zip_code">
+                </div>
+                <div class="form-group">
+                    <label for="company_country">Country</label>
+                    <input type="text" id="company_country" name="company_country" value="USA">
+                </div>
+                <div class="form-group">
+                    <label for="company_website">Website</label>
+                    <input type="url" id="company_website" name="company_website" placeholder="https://example.com">
+                </div>
+                <div class="form-group">
+                    <label for="company_tax_id">Tax ID</label>
+                    <input type="text" id="company_tax_id" name="company_tax_id">
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="action-btn" id="submitBtn">Register New User</button>
+    </form>
+</div>
+
+<script>
+    // Form submission handler
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const submitBtn = document.getElementById('submitBtn');
+        const alertDiv = document.getElementById('alert');
+        
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registering...';
+        
+        // Hide any existing alerts
+        alertDiv.style.display = 'none';
+        
+        // Collect form data
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        
+        try {
+            const response = await fetch('/api/newuserregistration', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                // Show success message
+                alertDiv.className = 'alert alert-success';
+                alertDiv.textContent = 'User registered successfully!';
+                alertDiv.style.display = 'block';
+                
+                // Reset form
+                e.target.reset();
+                
+                // Redirect to dashboard after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/toc/dashboard';
+                }, 2000);
+            } else {
+                // Show error message
+                alertDiv.className = 'alert alert-error';
+                alertDiv.textContent = result.error || 'Registration failed. Please try again.';
+                alertDiv.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = 'Network error. Please check your connection and try again.';
+            alertDiv.style.display = 'block';
+        } finally {
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Register New User';
+        }
+    });
+
+    // Auto-fill company type based on role selection
+    document.getElementById('role').addEventListener('change', function() {
+        const role = this.value;
+        const companyType = document.getElementById('company_type');
+        
+        if (role === 'shipper') {
+            companyType.value = 'shipper';
+        } else if (role === 'carrier') {
+            companyType.value = 'carrier';
+        } else if (role === 'admin') {
+            companyType.value = 'both';
+        }
+    });
+</script>
+{{end}} 

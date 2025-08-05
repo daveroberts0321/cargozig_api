@@ -6,14 +6,8 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/csrf"
-	"github.com/gofiber/fiber/v2/middleware/limiter"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/fiber/v2/utils"
 	"github.com/gofiber/template/html/v2"
 	"github.com/joho/godotenv"
 )
@@ -45,7 +39,7 @@ func main() {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
-	// Middleware
+	/* Middleware
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:5173, https://cargozig.com, https://dashboard.cargozig.com",
@@ -69,15 +63,18 @@ func main() {
 		Expiration:     24 * time.Hour,
 		KeyGenerator:   utils.UUIDv4,
 	}))
+	*/
 
 	// Routes
 	// Group
-	adminGroup := app.Group("/deathstar")
+	adminGroup := app.Group("/toc") // tactical operations center group admin- index page group
 	apiGroup := app.Group("/api")
+	//mcpv1Group := app.Group("/mcpv1")
 
 	// Register routes from handlers.
 	handlers.SetupAdminRoutes(adminGroup) // deathstar
 	handlers.SetupApiAuthRoutes(apiGroup) // api
+	//handlers.SetupMcpv1Routes(mcpv1Group) // mcpv1
 
 	// Start server
 	port := os.Getenv("PORT")

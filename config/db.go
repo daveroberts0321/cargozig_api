@@ -1,6 +1,7 @@
 package config
 
 import (
+	"cargozig_api/models"
 	"fmt"
 	"log"
 	"os"
@@ -69,6 +70,14 @@ func InitDB() (*gorm.DB, error) {
 	// Enable PostGIS extension
 	if err := db.Exec("CREATE EXTENSION IF NOT EXISTS postgis").Error; err != nil {
 		return nil, fmt.Errorf("failed to enable PostGIS extension: %v", err)
+	}
+
+	// Auto-migrate the database schema
+	if err := db.AutoMigrate(
+		&models.User{},
+		&models.Company{},
+	); err != nil {
+		return nil, fmt.Errorf("failed to auto-migrate database: %v", err)
 	}
 
 	// Configure connection pool

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"cargozig_api/config"
+	"cargozig_api/middleware"
 	"cargozig_api/models"
 	"fmt"
 	"os"
@@ -13,15 +14,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
-
 // SetupApiAuthRoutes sets up the authentication routes
 func SetupApiAuthRoutes(router fiber.Router) {
 	router.Post("/login", UserLogin)
 	router.Post("/logout", UserLogout)
 	router.Get("/protected", ProtectedRoute)
 	router.Post("/register", RegisterNewUser)
-	router.Post("/newuserregistration", NewUserRegistration) // New endpoint
+	router.Post("/newuserregistration", NewUserRegistration)
+
+	// Admin-only routes
+	router.Post("/admin/login", AdminLogin)
+	router.Post("/admin/logout", AdminLogout)
+	router.Post("/admin/register", AdminRegister)
+	router.Post("/admin/setup", AdminSetup) // First admin setup - no auth required
+	router.Get("/admin/protected", AdminProtectedRoute)
 }
 
 // GenerateJWT creates a JWT token
@@ -42,7 +48,7 @@ func GenerateJWT(userID string, roles []models.Role) (string, error) {
 	// Create a new token with claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	// Sign the token with the secret
-	return token.SignedString(jwtSecret)
+	return token.SignedString(middleware.GetJWTSecret())
 }
 
 // RegisterNewUser handles user registration and sets a JWT cookie
@@ -419,7 +425,7 @@ func ProtectedRoute(c *fiber.Ctx) error {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return jwtSecret, nil
+		return middleware.GetJWTSecret(), nil
 	})
 
 	if err != nil || !token.Valid {
@@ -463,4 +469,302 @@ func ProtectedRoute(c *fiber.Ctx) error {
 		"user_id": userID,
 		"roles":   roles,
 	})
+}
+
+// AdminLogin authenticates admin users and returns a JWT in a secure cookie
+func AdminLogin(c *fiber.Ctx) error {
+	var loginRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	// Parse the request body
+	if err := c.BodyParser(&loginRequest); err != nil {
+		fmt.Println("Error parsing admin login request:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	// Get database instance
+	db := config.GetDB()
+
+	// Find user in the database
+	var user models.User
+	if err := db.Where("email = ?", loginRequest.Email).First(&user).Error; err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid email or password"})
+	}
+
+	// Check if user is active
+	if !user.Active {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Account is disabled. Please contact support."})
+	}
+
+	// Check if user has admin role
+	hasAdminRole := false
+	for _, role := range user.Roles {
+		if role == models.RoleAdmin {
+			hasAdminRole = true
+			break
+		}
+	}
+	if !hasAdminRole {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Access denied. Admin privileges required."})
+	}
+
+	// Compare the hashed password
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password)); err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid email or password"})
+	}
+
+	// Update last login time
+	now := time.Now()
+	user.LastLogin = &now
+	db.Save(&user)
+
+	// Generate JWT token
+	token, err := GenerateJWT(user.ID.String(), user.Roles)
+	if err != nil {
+		fmt.Println("Error generating admin token:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to generate token"})
+	}
+
+	// Set environment-specific cookie settings
+	var secure bool = true
+	var sameSite string = "Strict"
+	if os.Getenv("ENVIRONMENT") == "development" {
+		secure = false
+		sameSite = "None"
+	}
+
+	// Set JWT as an HTTP-only cookie
+	c.Cookie(&fiber.Cookie{
+		Name:     "admin_auth_token",
+		Value:    token,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HTTPOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Admin login successful",
+		"user": fiber.Map{
+			"id":       user.ID,
+			"username": user.Username,
+			"email":    user.Email,
+			"roles":    user.Roles,
+		},
+	})
+}
+
+// AdminRegister creates a new admin user (only accessible by existing admins)
+func AdminRegister(c *fiber.Ctx) error {
+	fmt.Println("=== AdminRegister called ===")
+
+	// Get database instance
+	db := config.GetDB()
+
+	// Check if any admin users exist
+	var adminCount int64
+	countErr := db.Model(&models.User{}).Where("roles @> ?", []string{"admin"}).Count(&adminCount)
+	if countErr != nil {
+		fmt.Printf("Error checking admin count: %v\n", countErr)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Database error checking admin count"})
+	}
+
+	fmt.Printf("Found %d existing admin users\n", adminCount)
+
+	// If no admin users exist, allow creation without authentication (first admin setup)
+	if adminCount == 0 {
+		fmt.Println("No admin users found. Allowing first admin creation.")
+	} else {
+		fmt.Println("Admin users exist. Checking authentication...")
+		// Check if the request is from an authenticated admin
+		adminUser, err := getAdminUserFromToken(c)
+		if err != nil {
+			fmt.Printf("Authentication failed: %v\n", err)
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Admin authentication required"})
+		}
+
+		// Log the admin user who is creating the new admin
+		fmt.Printf("Admin user %s (ID: %s) is creating a new admin user\n", adminUser.Username, adminUser.ID)
+	}
+
+	var req struct {
+		Username string `json:"username"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	// Parse request body
+	if err := c.BodyParser(&req); err != nil {
+		fmt.Println("Error parsing admin registration request:", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	// Validate input
+	if req.Username == "" || req.Email == "" || req.Password == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Missing required fields"})
+	}
+
+	// Trim spaces
+	req.Username = strings.TrimSpace(req.Username)
+	req.Email = strings.TrimSpace(req.Email)
+
+	// Check if user already exists
+	var existingUser models.User
+	if err := db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "User already exists"})
+	}
+
+	// Hash password using bcrypt
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		fmt.Println("Error hashing admin password:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to hash password"})
+	}
+
+	// Create new admin user
+	newAdmin := models.User{
+		Username:    req.Username,
+		Email:       req.Email,
+		Password:    string(hashedPassword),
+		Roles:       []models.Role{models.RoleAdmin}, // Admin role only
+		Permissions: []models.Permission{},           // No custom permissions initially
+		Active:      true,
+	}
+
+	// Save user to the database
+	if err := db.Create(&newAdmin).Error; err != nil {
+		fmt.Println("Error creating admin user:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Could not create admin user"})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"status":  "success",
+		"message": "Admin user created successfully",
+		"user_id": newAdmin.ID,
+		"user": fiber.Map{
+			"id":       newAdmin.ID,
+			"username": newAdmin.Username,
+			"email":    newAdmin.Email,
+			"roles":    newAdmin.Roles,
+		},
+	})
+}
+
+// AdminProtectedRoute example for admin-only routes
+func AdminProtectedRoute(c *fiber.Ctx) error {
+	// Get JWT token from cookie
+	token := c.Cookies("admin_auth_token")
+	if token == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Admin authentication required"})
+	}
+
+	// Parse and validate the token
+	claims, err := middleware.ParseJWT(token)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid or expired token"})
+	}
+
+	// Check if user has admin role
+	userID := claims["user_id"].(string)
+	roles := claims["roles"].([]interface{})
+
+	hasAdminRole := false
+	for _, role := range roles {
+		if role.(string) == string(models.RoleAdmin) {
+			hasAdminRole = true
+			break
+		}
+	}
+
+	if !hasAdminRole {
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"error": "Admin privileges required"})
+	}
+
+	return c.JSON(fiber.Map{
+		"status":  "success",
+		"message": "Admin access granted",
+		"user_id": userID,
+	})
+}
+
+// AdminLogout clears the admin authentication cookie
+func AdminLogout(c *fiber.Ctx) error {
+	// Clear the admin auth token cookie
+	var secure bool = true
+	var sameSite string = "Strict"
+	if os.Getenv("ENVIRONMENT") == "development" {
+		secure = false
+		sameSite = "None"
+	}
+
+	c.Cookie(&fiber.Cookie{
+		Name:     "admin_auth_token",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour), // Expire immediately
+		HTTPOnly: true,
+		Secure:   secure,
+		SameSite: sameSite,
+	})
+
+	return c.JSON(fiber.Map{"status": "success", "message": "Admin logged out"})
+}
+
+// getAdminUserFromToken extracts and validates admin user from JWT token
+func getAdminUserFromToken(c *fiber.Ctx) (*models.User, error) {
+	fmt.Println("=== getAdminUserFromToken called ===")
+
+	token := c.Cookies("admin_auth_token")
+	if token == "" {
+		fmt.Println("No admin_auth_token cookie found")
+		return nil, fmt.Errorf("no admin token found")
+	}
+
+	fmt.Printf("Found admin_auth_token cookie: %s...\n", token[:10])
+
+	// Parse and validate the token
+	claims, err := middleware.ParseJWT(token)
+	if err != nil {
+		fmt.Printf("Token parsing failed: %v\n", err)
+		return nil, fmt.Errorf("invalid token: %v", err)
+	}
+
+	fmt.Printf("Token parsed successfully, user_id: %v\n", claims["user_id"])
+
+	// Get user from database
+	userID := claims["user_id"].(string)
+	db := config.GetDB()
+
+	var user models.User
+	if err := db.Where("id = ?", userID).First(&user).Error; err != nil {
+		fmt.Printf("User not found in database: %v\n", err)
+		return nil, fmt.Errorf("user not found: %v", err)
+	}
+
+	fmt.Printf("User found: %s (ID: %s), Roles: %v\n", user.Username, user.ID, user.Roles)
+
+	// Check if user is active
+	if !user.Active {
+		fmt.Println("User account is disabled")
+		return nil, fmt.Errorf("user account is disabled")
+	}
+
+	// Check if user has admin role
+	hasAdminRole := false
+	for _, role := range user.Roles {
+		if role == models.RoleAdmin {
+			hasAdminRole = true
+			break
+		}
+	}
+	if !hasAdminRole {
+		fmt.Printf("User does not have admin role. User roles: %v\n", user.Roles)
+		return nil, fmt.Errorf("admin privileges required")
+	}
+
+	fmt.Println("User has admin privileges")
+
+	return &user, nil
 }

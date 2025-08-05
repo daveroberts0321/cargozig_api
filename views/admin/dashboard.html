@@ -1,0 +1,139 @@
+{{define "content"}}
+<div class="card">
+    <h2>Welcome to Admin Dashboard</h2>
+    <p>Manage your system from here.</p>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3>System Overview</h3>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="total-users">0</div>
+                    <div class="stat-label">Total Users</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="admin-users">0</div>
+                    <div class="stat-label">Admin Users</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Quick Actions</h3>
+            <div class="admin-actions">
+                <button class="action-btn" onclick="showAdminRegister()">Register New Admin</button>
+                <button class="action-btn" onclick="refreshStats()">Refresh Stats</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Registration Form -->
+<div id="register-content" style="display: none;" class="card">
+    <h2>Register New Admin</h2>
+    <div class="register-form">
+        <div id="register-error" class="error-message"></div>
+        <div id="register-success" class="success-message"></div>
+        
+        <form id="admin-register-form">
+            <div class="form-group">
+                <label for="new-username">Username</label>
+                <input type="text" id="new-username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="new-email">Email</label>
+                <input type="email" id="new-email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="new-password">Password</label>
+                <input type="password" id="new-password" name="password" required>
+            </div>
+            
+            <button type="submit" class="action-btn">Register Admin</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Navigation functions
+    function showDashboard() {
+        document.getElementById('dashboard-content').style.display = 'block';
+        document.getElementById('register-content').style.display = 'none';
+        updateNavActive('dashboard');
+    }
+
+    function showAdminRegister() {
+        document.getElementById('register-content').style.display = 'block';
+        updateNavActive('register');
+    }
+
+    function updateNavActive(activeItem) {
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => item.classList.remove('active'));
+        
+        if (activeItem === 'dashboard') {
+            navItems[0].classList.add('active');
+        } else if (activeItem === 'register') {
+            navItems[2].classList.add('active');
+        }
+    }
+
+    // Admin registration form handler
+    document.getElementById('admin-register-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const username = document.getElementById('new-username').value;
+        const email = document.getElementById('new-email').value;
+        const password = document.getElementById('new-password').value;
+        
+        const errorDiv = document.getElementById('register-error');
+        const successDiv = document.getElementById('register-success');
+        
+        errorDiv.style.display = 'none';
+        successDiv.style.display = 'none';
+
+        try {
+            const response = await fetch('/api/admin/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                successDiv.textContent = data.message || 'Admin user created successfully!';
+                successDiv.style.display = 'block';
+                
+                // Clear form
+                document.getElementById('admin-register-form').reset();
+            } else {
+                errorDiv.textContent = data.error || 'Failed to create admin user.';
+                errorDiv.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            errorDiv.textContent = 'Network error. Please try again.';
+            errorDiv.style.display = 'block';
+        }
+    });
+
+    // Refresh stats
+    async function refreshStats() {
+        // This would typically fetch real stats from the server
+        document.getElementById('total-users').textContent = Math.floor(Math.random() * 100);
+        document.getElementById('admin-users').textContent = Math.floor(Math.random() * 10);
+    }
+
+    // Load initial stats
+    refreshStats();
+</script>
+{{end}} 

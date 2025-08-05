@@ -4,23 +4,11 @@ import (
 	"cargozig_api/config" // Import config to access the initialized database
 	"cargozig_api/models"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
-
-// JWT secret key (from environment)
-var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
-
-// Initialize checks and configurations
-func init() {
-	// Check if JWT_SECRET is set
-	if len(jwtSecret) == 0 {
-		fmt.Println("Warning: JWT_SECRET environment variable is not set")
-	}
-}
 
 // AuthenticateUser verifies the JWT token and loads the user information
 func AuthenticateUser() fiber.Handler {
@@ -50,7 +38,7 @@ func AuthenticateUser() fiber.Handler {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			}
-			return jwtSecret, nil
+			return GetJWTSecret(), nil
 		})
 
 		if err != nil || !token.Valid {
