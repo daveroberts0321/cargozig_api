@@ -20,10 +20,11 @@ func main() {
 	}
 
 	engine := html.New("./views", ".html")
+	engine.Reload(true) // Enable template reloading in development
+
 	// Pass the engine to the Fiber config
 	app := fiber.New(fiber.Config{
-		Views:       engine,
-		ViewsLayout: "layouts/main", //default layout
+		Views: engine,
 	})
 
 	// Initialize database connection during startup
@@ -66,6 +67,9 @@ func main() {
 	*/
 
 	// Routes
+	// Public routes (no auth required)
+	handlers.SetupPublicRoutes(app) // public routes
+
 	// Group
 	adminGroup := app.Group("/toc") // tactical operations center group admin- index page group
 	apiGroup := app.Group("/api")

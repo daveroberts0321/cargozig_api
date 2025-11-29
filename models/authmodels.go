@@ -151,3 +151,24 @@ type Company struct {
 	Verified       bool    `json:"verified" gorm:"default:false"`
 	Users          *[]User `json:"users,omitempty" gorm:"foreignKey:CompanyID"`
 }
+
+// Contact represents contact form submissions from the website
+type Contact struct {
+	BaseModel
+	Name    string `json:"name"`
+	Email   string `json:"email"`
+	Phone   string `json:"phone,omitempty"`
+	Company string `json:"company,omitempty"`
+	Subject string `json:"subject"`
+	Message string `json:"message"`
+	Status  string `json:"status" gorm:"default:'new'"` // "new", "read", "responded", "closed"
+}
+
+// MailingList represents email subscribers for marketing
+type MailingList struct {
+	BaseModel
+	Email   string `json:"email" gorm:"uniqueIndex"`
+	Name    string `json:"name,omitempty"`
+	Active  bool   `json:"active" gorm:"default:true"`
+	Source  string `json:"source,omitempty"` // "contact_form", "newsletter_signup", etc.
+}

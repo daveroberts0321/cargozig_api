@@ -1,0 +1,367 @@
+<!-- Hero Section -->
+<section class="hero-section text-white relative min-h-screen flex items-center">
+    <div class="hero-glow gpu-accelerated"></div>
+    <div class="hero-glow-2 gpu-accelerated"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6">
+            Get in <span class="gradient-text">Touch</span>
+        </h1>
+        <p class="text-xl md:text-2xl text-gray-200 mb-8 max-w-3xl mx-auto leading-relaxed">
+            Ready to transform your freight brokerage operations? Let's discuss how CargoZig's
+            enterprise platform can revolutionize your business with AI-powered efficiency.
+        </p>
+    </div>
+</section>
+
+<!-- Contact Form & Info -->
+<section class="py-16 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Contact Form -->
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Send us a Message</h2>
+                <p class="text-lg text-gray-600 mb-8">
+                    Fill out the form below and we'll get back to you within 24 hours.
+                </p>
+
+                <form id="contactForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+                            <input type="text" id="firstName" name="firstName" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007185] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+                            <input type="text" id="lastName" name="lastName" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007185] focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address *</label>
+                        <input type="email" id="email" name="email" required
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007185] focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label for="company" class="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
+                        <input type="text" id="company" name="company"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007185] focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                        <input type="tel" id="phone" name="phone"
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007185] focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label for="subject" class="block text-sm font-medium text-gray-700 mb-2">Subject *</label>
+                        <select id="subject" name="subject" required
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007185] focus:border-transparent">
+                            <option value="">Select a subject</option>
+                            <option value="demo">Request a Demo</option>
+                            <option value="pricing">Pricing Information</option>
+                            <option value="support">Technical Support</option>
+                            <option value="partnership">Partnership Inquiry</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-gray-700 mb-2">Message *</label>
+                        <textarea id="message" name="message" rows="6" required
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007185] focus:border-transparent"
+                                  placeholder="Tell us about your freight brokerage needs..."></textarea>
+                    </div>
+
+                    <div class="flex items-center">
+                        <input type="checkbox" id="newsletter" name="newsletter"
+                               class="h-4 w-4 text-[#007185] focus:ring-[#007185] border-gray-300 rounded">
+                        <label for="newsletter" class="ml-2 block text-sm text-gray-700">
+                            Subscribe to our newsletter for freight industry updates
+                        </label>
+                    </div>
+
+                    <button type="submit" id="submitBtn"
+                            class="btn-primary text-white px-8 py-4 rounded-lg font-semibold text-lg w-full">
+                        Send Message
+                    </button>
+                </form>
+
+                <div id="alert" class="alert mt-6" style="display: none;"></div>
+            </div>
+
+            <!-- Contact Information -->
+            <div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-6">Contact Information</h2>
+
+                <!-- Office Info -->
+                <div class="bg-gray-50 p-6 rounded-lg mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Headquarters</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-[#007185] mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <div>
+                                <p class="text-gray-700 font-medium">CargoZig Headquarters</p>
+                                <p class="text-gray-600">123 Freight Way<br>Dyersburg, TN 38024<br>United States</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-[#007185] mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <div>
+                                <p class="text-gray-700 font-medium">Phone</p>
+                                <p class="text-gray-600">+1 (731) 334-5106</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-[#007185] mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <div>
+                                <p class="text-gray-700 font-medium">Email</p>
+                                <p class="text-gray-600">info@cargozig.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Hours -->
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 text-white p-6 rounded-lg mb-8">
+                    <h3 class="text-xl font-semibold mb-4">Business Hours</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>Monday - Friday</span>
+                            <span>8:00 AM - 6:00 PM CST</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Saturday</span>
+                            <span>9:00 AM - 2:00 PM CST</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Sunday</span>
+                            <span>Emergency Support Only</span>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-200 mt-4">
+                        24/7 emergency support available for critical freight operations.
+                    </p>
+                </div>
+
+                <!-- Quick Contact Options -->
+                <div class="space-y-4">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Quick Contact Options</h3>
+
+                    <a href="tel:+17313345106"
+                       class="flex items-center p-4 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors border border-emerald-200">
+                        <svg class="w-8 h-8 text-emerald-700 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                        </svg>
+                        <div>
+                            <p class="font-semibold text-gray-900">Call Freight Experts Now</p>
+                            <p class="text-sm text-gray-600">Direct line to experienced brokers</p>
+                        </div>
+                    </a>
+
+                    <a href="/toc/setup"
+                       class="flex items-center p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200">
+                        <svg class="w-8 h-8 text-slate-700 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <div>
+                            <p class="font-semibold text-gray-900">Start Enterprise Trial</p>
+                            <p class="text-sm text-gray-600">30-day free access • No commitment</p>
+                        </div>
+                    </a>
+
+                    <a href="/features"
+                       class="flex items-center p-4 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors border border-slate-200">
+                        <svg class="w-8 h-8 text-slate-700 mr-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        <div>
+                            <p class="font-semibold text-gray-900">Explore Enterprise Features</p>
+                            <p class="text-sm text-gray-600">See what sets CargoZig apart</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-16 bg-gray-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h2>
+            <p class="text-xl text-gray-600">
+                Quick answers to common questions about CargoZig
+            </p>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow-sm">
+                <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 focus:outline-none">
+                    <span class="text-lg font-medium text-gray-900">How much does CargoZig cost?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div class="faq-content px-6 pb-4 hidden">
+                    <p class="text-gray-600">
+                        CargoZig offers flexible pricing plans starting at $99/month for basic freight brokerage operations.
+                        Enterprise plans with advanced features start at $299/month. All plans include a 30-day free trial
+                        with no credit card required.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm">
+                <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 focus:outline-none">
+                    <span class="text-lg font-medium text-gray-900">How long does implementation take?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div class="faq-content px-6 pb-4 hidden">
+                    <p class="text-gray-600">
+                        Most implementations are completed within 1-2 weeks. Our team handles data migration,
+                        system configuration, and user training. For enterprise customers, we offer dedicated
+                        implementation specialists to ensure a smooth transition.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm">
+                <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 focus:outline-none">
+                    <span class="text-lg font-medium text-gray-900">Do you offer training and support?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div class="faq-content px-6 pb-4 hidden">
+                    <p class="text-gray-600">
+                        Yes! We provide comprehensive training for all users and ongoing support. This includes
+                        live training sessions, detailed documentation, video tutorials, and 24/7 technical support
+                        for critical freight operations.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm">
+                <button class="faq-toggle w-full px-6 py-4 text-left flex justify-between items-center hover:bg-gray-50 focus:outline-none">
+                    <span class="text-lg font-medium text-gray-900">Can I integrate with my existing systems?</span>
+                    <svg class="w-5 h-5 text-gray-500 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div class="faq-content px-6 pb-4 hidden">
+                    <p class="text-gray-600">
+                        Absolutely! CargoZig offers robust API integrations with popular TMS systems, accounting software,
+                        EDI platforms, and load boards. Our integration team can help connect CargoZig with your existing
+                        technology stack for seamless operations.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    // FAQ toggle functionality
+    document.querySelectorAll('.faq-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const content = button.nextElementSibling;
+            const icon = button.querySelector('svg');
+
+            content.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        });
+    });
+
+    // Contact form submission
+    document.getElementById('contactForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const submitBtn = document.getElementById('submitBtn');
+        const alertDiv = document.getElementById('alert');
+
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Sending...';
+
+        // Hide any existing alerts
+        alertDiv.style.display = 'none';
+
+        // Collect form data
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                // Show success message
+                alertDiv.className = 'alert alert-success';
+                alertDiv.textContent = 'Thank you for your message! We\'ll get back to you within 24 hours.';
+                alertDiv.style.display = 'block';
+
+                // Reset form
+                e.target.reset();
+            } else {
+                // Show error message
+                alertDiv.className = 'alert alert-error';
+                alertDiv.textContent = result.error || 'Failed to send message. Please try again.';
+                alertDiv.style.display = 'block';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alertDiv.className = 'alert alert-error';
+            alertDiv.textContent = 'Network error. Please check your connection and try again.';
+            alertDiv.style.display = 'block';
+        } finally {
+            // Re-enable submit button
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Send Message';
+        }
+    });
+</script>
+
+<style>
+    .rotate-180 {
+        transform: rotate(180deg);
+    }
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+    }
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+    }
+</style>
