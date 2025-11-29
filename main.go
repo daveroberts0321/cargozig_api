@@ -6,8 +6,12 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/limiter"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/template/html/v2"
 	"github.com/joho/godotenv"
 )
@@ -40,7 +44,7 @@ func main() {
 		log.Fatalf("Failed to ping database: %v", err)
 	}
 
-	/* Middleware
+	// Middleware
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "http://localhost:5173, https://cargozig.com, https://dashboard.cargozig.com",
@@ -56,28 +60,21 @@ func main() {
 			return c.IP()
 		},
 	}))
-	// CSRF Protection
-	app.Use(csrf.New(csrf.Config{
-		KeyLookup:      "header:X-Csrf-Token", // Keep this simple header-based approach
-		CookieName:     "csrf_",
-		CookieSameSite: "Lax",
-		Expiration:     24 * time.Hour,
-		KeyGenerator:   utils.UUIDv4,
-	}))
-	*/
 
 	// Routes
 	// Public routes (no auth required)
 	handlers.SetupPublicRoutes(app) // public routes
 
 	// Group
-	adminGroup := app.Group("/toc") // tactical operations center group admin- index page group
+	adminGroup := app.Group("/toc")             // tactical operations center group admin- index page group
+	superAdminGroup := app.Group("/superadmin") // super admin portal for platform management
 	apiGroup := app.Group("/api")
 	//mcpv1Group := app.Group("/mcpv1")
 
 	// Register routes from handlers.
-	handlers.SetupAdminRoutes(adminGroup) // deathstar
-	handlers.SetupApiAuthRoutes(apiGroup) // api
+	handlers.SetupAdminRoutes(adminGroup)           // deathstar
+	handlers.SetupSuperAdminRoutes(superAdminGroup) // super admin portal
+	handlers.SetupApiAuthRoutes(apiGroup)           // api
 	//handlers.SetupMcpv1Routes(mcpv1Group) // mcpv1
 
 	// Start server

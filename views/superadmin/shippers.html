@@ -1,0 +1,160 @@
+<!-- Shippers Management -->
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">Shippers Management</h1>
+        <p class="text-gray-600 mt-2">Manage all shipper accounts across the platform</p>
+    </div>
+    <a href="/superadmin/shippers/new" class="bg-[#C7511F] hover:bg-[#A0421A] text-white px-6 py-3 rounded-lg font-semibold transition flex items-center">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+        </svg>
+        Add New Shipper
+    </a>
+</div>
+
+<!-- Search and Filter Bar -->
+<div class="bg-white rounded-lg shadow mb-6 p-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="md:col-span-2">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+            <input type="text" id="searchInput" placeholder="Search by name, email, or company..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+            <select id="statusFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Company</label>
+            <select id="companyFilter" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <option value="">All Companies</option>
+                {{range .Companies}}
+                <option value="{{.ID}}">{{.Name}}</option>
+                {{end}}
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- Shippers Table -->
+<div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Login</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-gray-200">
+            {{range .Shippers}}
+            <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-10 w-10">
+                            <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                <span class="text-purple-600 font-semibold">{{index .Username 0 | printf "%c"}}</span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">{{.Username}}</div>
+                            <div class="text-sm text-gray-500">ID: {{.ID}}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{.Company.Name}}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{.Email}}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    {{if .Active}}
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        Active
+                    </span>
+                    {{else}}
+                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                        Inactive
+                    </span>
+                    {{end}}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {{if .LastLogin}}{{.LastLogin}}{{else}}Never{{end}}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex justify-end space-x-2">
+                        <a href="/superadmin/shippers/{{.ID}}" class="text-blue-600 hover:text-blue-900">View</a>
+                        <a href="/superadmin/shippers/{{.ID}}/edit" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                        <button onclick="deleteShipper('{{.ID}}')" class="text-red-600 hover:text-red-900">Delete</button>
+                    </div>
+                </td>
+            </tr>
+            {{else}}
+            <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                    No shippers found
+                </td>
+            </tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div class="mt-6 flex items-center justify-between">
+    <div class="text-sm text-gray-700">
+        Showing <span class="font-medium">{{.Pagination.Start}}</span> to <span class="font-medium">{{.Pagination.End}}</span> of <span class="font-medium">{{.Pagination.Total}}</span> results
+    </div>
+</div>
+
+<script>
+// Search functionality
+document.getElementById('searchInput').addEventListener('input', function(e) {
+    // Implement client-side filtering or make AJAX call
+    console.log('Search:', e.target.value);
+});
+
+// Status filter
+document.getElementById('statusFilter').addEventListener('change', function(e) {
+    // Implement filtering logic
+    console.log('Filter by status:', e.target.value);
+});
+
+// Company filter
+document.getElementById('companyFilter').addEventListener('change', function(e) {
+    // Implement filtering logic
+    console.log('Filter by company:', e.target.value);
+});
+
+// Delete shipper function
+function deleteShipper(shipperId) {
+    if (confirm('Are you sure you want to delete this shipper? This action cannot be undone.')) {
+        fetch(`/superadmin/api/shippers/${shipperId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('Shipper deleted successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('Network error: ' + error);
+        });
+    }
+}
+</script>
+

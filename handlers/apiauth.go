@@ -31,7 +31,7 @@ func SetupApiAuthRoutes(router fiber.Router) {
 }
 
 // GenerateJWT creates a JWT token
-func GenerateJWT(userID string, roles []models.Role) (string, error) {
+func GenerateJWT(userID string, roles models.RoleArray) (string, error) {
 	// Convert roles to strings for JWT
 	roleStrings := make([]string, len(roles))
 	for i, role := range roles {
@@ -95,8 +95,8 @@ func RegisterNewUser(c *fiber.Ctx) error {
 		Username:    req.Username,
 		Email:       req.Email,
 		Password:    string(hashedPassword),
-		Roles:       []models.Role{models.RoleShipper}, // Default role
-		Permissions: []models.Permission{},             // No custom permissions initially
+		Roles:       models.RoleArray{models.RoleShipper}, // Default role
+		Permissions: models.PermissionArray{},             // No custom permissions initially
 		Active:      true,
 	}
 
@@ -181,7 +181,8 @@ func NewUserRegistration(c *fiber.Ctx) error {
 	// Validate role
 	validRole := false
 	selectedRole := models.Role(req.Role)
-	for _, role := range []models.Role{models.RoleAdmin, models.RoleShipper, models.RoleCarrier} {
+	validRoles := []models.Role{models.RoleAdmin, models.RoleShipper, models.RoleCarrier}
+	for _, role := range validRoles {
 		if selectedRole == role {
 			validRole = true
 			break
@@ -254,8 +255,8 @@ func NewUserRegistration(c *fiber.Ctx) error {
 		Email:       req.Email,
 		Password:    string(hashedPassword),
 		CompanyID:   company.ID,
-		Roles:       []models.Role{selectedRole},
-		Permissions: []models.Permission{}, // No custom permissions initially
+		Roles:       models.RoleArray{selectedRole},
+		Permissions: models.PermissionArray{}, // No custom permissions initially
 		Active:      true,
 		LastLogin:   &now,
 	}
@@ -535,6 +536,35 @@ func AdminLogin(c *fiber.Ctx) error {
 		sameSite = "None"
 	}
 
+	// Determine user type and redirect URL based on permissions
+	var userType string
+	var redirectURL string
+	
+	if user.HasPermission(models.SystemAdmin) {
+		userType = "superadmin"
+		redirectURL = "/superadmin/dashboard"
+	} else if hasAdminRole {
+		userType = "broker"
+		redirectURL = "/toc/dashboard"
+	}
+	
+	// Check for other roles
+	for _, role := range user.Roles {
+		if role == models.RoleShipper && userType == "" {
+			userType = "shipper"
+			redirectURL = "/shipper/dashboard"
+		} else if role == models.RoleCarrier && userType == "" {
+			userType = "carrier"
+			redirectURL = "/carrier/dashboard"
+		}
+	}
+	
+	// Default fallback
+	if userType == "" {
+		userType = "user"
+		redirectURL = "/dashboard"
+	}
+
 	// Set JWT as an HTTP-only cookie
 	c.Cookie(&fiber.Cookie{
 		Name:     "admin_auth_token",
@@ -544,10 +574,22 @@ func AdminLogin(c *fiber.Ctx) error {
 		Secure:   secure,
 		SameSite: sameSite,
 	})
+	
+	// Set user type cookie for role-based routing
+	c.Cookie(&fiber.Cookie{
+		Name:     "user_type",
+		Value:    userType,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HTTPOnly: false, // Allow JavaScript to read for client-side routing
+		Secure:   secure,
+		SameSite: sameSite,
+	})
 
 	return c.JSON(fiber.Map{
-		"status":  "success",
-		"message": "Admin login successful",
+		"status":       "success",
+		"message":      "Login successful",
+		"redirect_url": redirectURL,
+		"user_type":    userType,
 		"user": fiber.Map{
 			"id":       user.ID,
 			"username": user.Username,
@@ -629,8 +671,8 @@ func AdminRegister(c *fiber.Ctx) error {
 		Username:    req.Username,
 		Email:       req.Email,
 		Password:    string(hashedPassword),
-		Roles:       []models.Role{models.RoleAdmin}, // Admin role only
-		Permissions: []models.Permission{},           // No custom permissions initially
+		Roles:       models.RoleArray{models.RoleAdmin}, // Admin role only
+		Permissions: models.PermissionArray{},           // No custom permissions initially
 		Active:      true,
 	}
 

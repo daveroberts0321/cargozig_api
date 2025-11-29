@@ -175,9 +175,10 @@
                     alertDiv.textContent = 'Login successful! Redirecting...';
                     alertDiv.style.display = 'block';
                     
-                    // Redirect to dashboard after 1 second
+                    // Redirect to the appropriate dashboard based on user role
+                    const redirectUrl = result.redirect_url || '/toc/dashboard';
                     setTimeout(() => {
-                        window.location.href = '/toc/dashboard';
+                        window.location.href = redirectUrl;
                     }, 1000);
                 } else {
                     // Show error message

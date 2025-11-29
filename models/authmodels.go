@@ -1,9 +1,11 @@
 package models
 
 import (
+	"database/sql/driver"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -11,6 +13,94 @@ type Permission string
 
 // Role represents a named set of permissions
 type Role string
+
+// RoleArray is a custom type for handling PostgreSQL text arrays
+type RoleArray []Role
+
+// Scan implements the sql.Scanner interface for RoleArray
+func (ra *RoleArray) Scan(value interface{}) error {
+	if value == nil {
+		*ra = RoleArray{}
+		return nil
+	}
+
+	// Use pq.Array to scan the PostgreSQL array
+	var strArray pq.StringArray
+	if err := strArray.Scan(value); err != nil {
+		return err
+	}
+
+	// Convert []string to []Role
+	roles := make([]Role, len(strArray))
+	for i, s := range strArray {
+		roles[i] = Role(s)
+	}
+	*ra = roles
+	return nil
+}
+
+// Value implements the driver.Valuer interface for RoleArray
+func (ra RoleArray) Value() (driver.Value, error) {
+	if len(ra) == 0 {
+		return pq.Array([]string{}), nil
+	}
+
+	// Convert []Role to []string
+	strArray := make([]string, len(ra))
+	for i, r := range ra {
+		strArray[i] = string(r)
+	}
+	return pq.Array(strArray), nil
+}
+
+// GormDataType tells GORM what database type to use
+func (ra RoleArray) GormDataType() string {
+	return "text[]"
+}
+
+// PermissionArray is a custom type for handling PostgreSQL text arrays
+type PermissionArray []Permission
+
+// Scan implements the sql.Scanner interface for PermissionArray
+func (pa *PermissionArray) Scan(value interface{}) error {
+	if value == nil {
+		*pa = PermissionArray{}
+		return nil
+	}
+
+	// Use pq.Array to scan the PostgreSQL array
+	var strArray pq.StringArray
+	if err := strArray.Scan(value); err != nil {
+		return err
+	}
+
+	// Convert []string to []Permission
+	permissions := make([]Permission, len(strArray))
+	for i, s := range strArray {
+		permissions[i] = Permission(s)
+	}
+	*pa = permissions
+	return nil
+}
+
+// Value implements the driver.Valuer interface for PermissionArray
+func (pa PermissionArray) Value() (driver.Value, error) {
+	if len(pa) == 0 {
+		return pq.Array([]string{}), nil
+	}
+
+	// Convert []Permission to []string
+	strArray := make([]string, len(pa))
+	for i, p := range pa {
+		strArray[i] = string(p)
+	}
+	return pq.Array(strArray), nil
+}
+
+// GormDataType tells GORM what database type to use
+func (pa PermissionArray) GormDataType() string {
+	return "text[]"
+}
 
 // Define standard roles
 const (
@@ -101,28 +191,28 @@ func (base *BaseModel) BeforeCreate(tx *gorm.DB) error {
 
 type User struct {
 	BaseModel
-	Username     string       `json:"username"`
-	Email        string       `json:"email" gorm:"uniqueIndex"`
-	Password     string       `json:"-"` // Never expose the password in JSON responses
-	CompanyID    uuid.UUID    `json:"company_id"`
-	Company      *Company     `json:"company" gorm:"foreignKey:CompanyID"`
-	Roles        []Role       `gorm:"type:text[]"` // Using PostgreSQL text array for roles
-	Permissions  []Permission `gorm:"type:text[]"` // Additional custom permissions
-	ProfileImage string       `json:"profile_image,omitempty"`
-	Active       bool         `json:"active" gorm:"default:true"`
-	LastLogin    *time.Time   `json:"last_login,omitempty"`
+	Username     string          `json:"username"`
+	Email        string          `json:"email" gorm:"uniqueIndex"`
+	Password     string          `json:"-"` // Never expose the password in JSON responses
+	CompanyID    uuid.UUID       `json:"company_id"`
+	Company      *Company        `json:"company" gorm:"foreignKey:CompanyID"`
+	Roles        RoleArray       `json:"roles" gorm:"type:text[]"`        // Using custom RoleArray type
+	Permissions  PermissionArray `json:"permissions" gorm:"type:text[]"`  // Using custom PermissionArray type
+	ProfileImage string          `json:"profile_image,omitempty"`
+	Active       bool            `json:"active" gorm:"default:true"`
+	LastLogin    *time.Time      `json:"last_login,omitempty"`
 }
 
 func (u *User) HasPermission(permission Permission) bool {
 	// First check custom permissions assigned directly to the user
-	for _, p := range u.Permissions {
+	for _, p := range []Permission(u.Permissions) {
 		if p == permission {
 			return true
 		}
 	}
 
 	// Then check role-based permissions
-	for _, role := range u.Roles {
+	for _, role := range []Role(u.Roles) {
 		if role.HasPermission(permission) {
 			return true
 		}

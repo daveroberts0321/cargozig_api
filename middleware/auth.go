@@ -13,8 +13,11 @@ import (
 // AuthenticateUser verifies the JWT token and loads the user information
 func AuthenticateUser() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		// Get JWT token from cookie
+		// Get JWT token from cookie - check both auth_token and admin_auth_token
 		tokenString := c.Cookies("auth_token")
+		if tokenString == "" {
+			tokenString = c.Cookies("admin_auth_token")
+		}
 
 		// If no token in cookie, check Authorization header
 		if tokenString == "" {
@@ -211,6 +214,141 @@ func LoadUser() fiber.Handler {
 
 		// Store the full user object in context
 		c.Locals("user", &user)
+
+		return c.Next()
+	}
+}
+
+// RequireSuperAdmin ensures the user has super admin permissions and redirects if not
+func RequireSuperAdmin() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		user, ok := c.Locals("user").(*models.User)
+		if !ok || user == nil {
+			return c.Redirect("/toc/login")
+		}
+
+		if !user.HasPermission(models.SystemAdmin) {
+			// Redirect to their appropriate dashboard
+			userType := c.Cookies("user_type")
+			switch userType {
+			case "broker":
+				return c.Redirect("/toc/dashboard")
+			case "shipper":
+				return c.Redirect("/shipper/dashboard")
+			case "carrier":
+				return c.Redirect("/carrier/dashboard")
+			default:
+				return c.Redirect("/toc/login")
+			}
+		}
+
+		return c.Next()
+	}
+}
+
+// RequireBroker ensures the user has broker/admin role
+func RequireBroker() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		user, ok := c.Locals("user").(*models.User)
+		if !ok || user == nil {
+			return c.Redirect("/toc/login")
+		}
+
+		// Check if user is a broker/admin
+		hasAdminRole := false
+		for _, role := range user.Roles {
+			if role == models.RoleAdmin {
+				hasAdminRole = true
+				break
+			}
+		}
+
+		if !hasAdminRole {
+			// Redirect to their appropriate dashboard
+			userType := c.Cookies("user_type")
+			switch userType {
+			case "superadmin":
+				return c.Redirect("/superadmin/dashboard")
+			case "shipper":
+				return c.Redirect("/shipper/dashboard")
+			case "carrier":
+				return c.Redirect("/carrier/dashboard")
+			default:
+				return c.Redirect("/toc/login")
+			}
+		}
+
+		return c.Next()
+	}
+}
+
+// RequireShipper ensures the user has shipper role
+func RequireShipper() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		user, ok := c.Locals("user").(*models.User)
+		if !ok || user == nil {
+			return c.Redirect("/toc/login")
+		}
+
+		// Check if user is a shipper
+		hasShipperRole := false
+		for _, role := range user.Roles {
+			if role == models.RoleShipper {
+				hasShipperRole = true
+				break
+			}
+		}
+
+		if !hasShipperRole {
+			// Redirect to their appropriate dashboard
+			userType := c.Cookies("user_type")
+			switch userType {
+			case "superadmin":
+				return c.Redirect("/superadmin/dashboard")
+			case "broker":
+				return c.Redirect("/toc/dashboard")
+			case "carrier":
+				return c.Redirect("/carrier/dashboard")
+			default:
+				return c.Redirect("/toc/login")
+			}
+		}
+
+		return c.Next()
+	}
+}
+
+// RequireCarrier ensures the user has carrier role
+func RequireCarrier() fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		user, ok := c.Locals("user").(*models.User)
+		if !ok || user == nil {
+			return c.Redirect("/toc/login")
+		}
+
+		// Check if user is a carrier
+		hasCarrierRole := false
+		for _, role := range user.Roles {
+			if role == models.RoleCarrier {
+				hasCarrierRole = true
+				break
+			}
+		}
+
+		if !hasCarrierRole {
+			// Redirect to their appropriate dashboard
+			userType := c.Cookies("user_type")
+			switch userType {
+			case "superadmin":
+				return c.Redirect("/superadmin/dashboard")
+			case "broker":
+				return c.Redirect("/toc/dashboard")
+			case "shipper":
+				return c.Redirect("/shipper/dashboard")
+			default:
+				return c.Redirect("/toc/login")
+			}
+		}
 
 		return c.Next()
 	}
